@@ -1,6 +1,7 @@
 import os
 import random
 import string
+import logging
 from datetime import datetime
 
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify
@@ -17,6 +18,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'classwatch-dev-secret')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet',
                     max_http_buffer_size=10 * 1024 * 1024)
+logging.basicConfig(level=os.environ.get('CLASSWATCH_LOG_LEVEL', 'INFO'))
 
 
 def env_flag(name, default=False):
@@ -384,6 +386,9 @@ def on_frame(data):
 
     result  = student_detectors[request.sid].analyze_frame(frame_data)
     meeting = active_meetings.get(code)
+
+    if result.get('status') == 'error':
+        app.logger.warning('Frame analysis error for sid=%s: %s', request.sid, result.get('alert'))
 
     # ── Update engagement stats ───────────────────────────────────────
     if request.sid in student_stats:

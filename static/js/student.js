@@ -21,7 +21,11 @@ let captureTimer  = null;
 let isCapturing   = true;
 let isMuted       = false;
 let isCamPaused   = false;
+let analysisInFlight = false;
+let analysisTimeout = null;
 const CAPTURE_MS  = 1500;
+const ANALYSIS_MAX_WIDTH = 480;
+const ANALYSIS_JPEG_QUALITY = 0.4;
 
 // ── DOM ───────────────────────────────────────────────────────────────────────
 const studentVideo = document.getElementById('student-video');   // own PiP
@@ -165,11 +169,15 @@ socket.on('webrtc_ice', async (data) => {
 
 // AI analysis result back from server
 socket.on('analysis_result', (result) => {
+  analysisInFlight = false;
+  clearTimeout(analysisTimeout);
+  analysisTimeout = null;
   setStatusUI(result.status, result.ear);
   if (result.alert) addAlert(result.alert, result.alert_type);
 });
 
 socket.on('meeting_ended', () => {
+  analysisInFlight = false;
   stopCapture();
   alert('The teacher has ended this meeting.');
   window.location.href = '/student';
@@ -182,21 +190,32 @@ socket.on('teacher_left', () => {
 });
 
 socket.on('disconnect', () => {
+  analysisInFlight = false;
   stopCapture();
   statusPill.textContent = 'Disconnected';
 });
 
 // ── Frame capture for AI ──────────────────────────────────────────────────────
 function captureAndSend() {
-  if (!localStream || !isCapturing) return;
+  if (!localStream || !isCapturing || analysisInFlight || !socket.connected) return;
   const w = studentVideo.videoWidth;
   const h = studentVideo.videoHeight;
   if (!w || !h) return;
 
-  canvas.width  = w;
-  canvas.height = h;
-  ctx.drawImage(studentVideo, 0, 0, w, h);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+  const scale = Math.min(1, ANALYSIS_MAX_WIDTH / w);
+  const scaledW = Math.max(1, Math.round(w * scale));
+  const scaledH = Math.max(1, Math.round(h * scale));
+
+  canvas.width  = scaledW;
+  canvas.height = scaledH;
+  ctx.drawImage(studentVideo, 0, 0, scaledW, scaledH);
+  const dataUrl = canvas.toDataURL('image/jpeg', ANALYSIS_JPEG_QUALITY);
+
+  analysisInFlight = true;
+  analysisTimeout = setTimeout(() => {
+    analysisInFlight = false;
+    analysisTimeout = null;
+  }, 6000);
 
   socket.emit('frame_analysis', {
     meeting_code: MEETING_CODE,
@@ -211,6 +230,9 @@ function startCapture() {
 function stopCapture() {
   clearInterval(captureTimer);
   captureTimer = null;
+  clearTimeout(analysisTimeout);
+  analysisTimeout = null;
+  analysisInFlight = false;
 }
 
 // ── Controls ──────────────────────────────────────────────────────────────────
