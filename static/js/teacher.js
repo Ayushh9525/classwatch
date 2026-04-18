@@ -183,7 +183,7 @@ const STATUS_LABELS = {
   sleeping:  'Sleeping',
   away:      'Looking away',
   phone_usage: 'Phone usage',
-  no_face:   'Not visible',
+  no_face:   'Student not visible',
   unknown:   'Waiting…',
   connected: 'Connected',
   error:     'Error',

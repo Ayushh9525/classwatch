@@ -252,3 +252,19 @@ def has_reports(meeting_code):
     result = cursor.fetchone()
     conn.close()
     return result['cnt'] > 0
+
+
+def get_reports_by_student_name(student_name):
+    """Return past meeting reports for a student by their display name."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT r.*, m.title AS meeting_title, m.created_at AS meeting_created_at
+        FROM reports r
+        LEFT JOIN meetings m ON m.code = r.meeting_code
+        WHERE r.student_name = ?
+        ORDER BY r.created_at DESC
+    ''', (student_name,))
+    reports = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return reports

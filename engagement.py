@@ -86,7 +86,7 @@ class EngagementDetector:
         self.away_hold_sec = 5.0
         self.phone_hold_sec = 0.65
         self.writing_hold_sec = 1.5
-        self.no_face_hold_sec = 3.0
+        self.no_face_hold_sec = 2.5
         self.clear_grace_sec = 0.6
         self.phone_conf_threshold = 0.16
         self.phone_class_id = 67  # COCO "cell phone"
@@ -287,7 +287,7 @@ class EngagementDetector:
                 if self.no_face_event.update(True):
                     result["looking_away"] = True
                     result["status"] = "no_face"
-                    result["alert"] = "Student not visible — face not detected"
+                    result["alert"] = "Student not visible"
                     result["alert_type"] = "no_face"
                 return result
 
@@ -300,7 +300,7 @@ class EngagementDetector:
                 if self.no_face_event.update(True):
                     result["looking_away"] = True
                     result["status"] = "no_face"
-                    result["alert"] = "Student not visible — face not detected"
+                    result["alert"] = "Student not visible"
                     result["alert_type"] = "no_face"
                 return result
 

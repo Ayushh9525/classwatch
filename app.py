@@ -10,7 +10,8 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from database import (init_db, create_user, authenticate_user,
                       create_meeting, get_meeting_by_code, get_meeting_any,
                       get_meetings_by_host, end_meeting,
-                      save_report, get_reports_by_meeting, has_reports)
+                      save_report, get_reports_by_meeting, has_reports,
+                      get_reports_by_student_name)
 from engagement import EngagementDetector
 
 app = Flask(__name__)
@@ -167,6 +168,26 @@ def teacher_home():
     return render_template('teacher_home.html', meetings=meetings, user=session)
 
 
+@app.route('/teacher/join', methods=['POST'])
+def teacher_join_by_code():
+    err = login_required('teacher')
+    if err: return err
+    code = request.form.get('code', '').strip().upper()
+    meeting = get_meeting_by_code(code) if code else None
+    if meeting:
+        return redirect(url_for('teacher_room', code=code))
+
+    meetings = get_meetings_by_host(session['user_id'])
+    for m in meetings:
+        m['has_report'] = has_reports(m['code'])
+    return render_template(
+        'teacher_home.html',
+        meetings=meetings,
+        user=session,
+        error='Meeting code not found or has ended.',
+    )
+
+
 @app.route('/teacher/create', methods=['GET', 'POST'])
 def create_meeting_route():
     err = login_required('teacher')
@@ -256,7 +277,8 @@ def meeting_report(code):
 def student_home():
     err = login_required('student')
     if err: return err
-    return render_template('student_home.html', user=session)
+    reports = get_reports_by_student_name(session['name'])
+    return render_template('student_home.html', user=session, reports=reports)
 
 
 @app.route('/join/<code>')
@@ -280,7 +302,8 @@ def join_by_code():
     code = request.form.get('code', '').strip().upper()
     if code:
         return redirect(url_for('join_meeting', code=code))
-    return render_template('student_home.html', user=session,
+    reports = get_reports_by_student_name(session['name']) if session.get('role') == 'student' else []
+    return render_template('student_home.html', user=session, reports=reports,
                            error='Please enter a meeting code.')
 
 
