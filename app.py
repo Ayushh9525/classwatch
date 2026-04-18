@@ -333,7 +333,19 @@ def on_student_join(data):
 
     # Tell teacher a new student arrived (teacher will initiate WebRTC)
     socketio.emit('student_joined', student_info, room=f'teacher_{code}')
+    socketio.emit('student_joined', student_info, room=f'meeting_{code}', include_self=False)
     emit('joined_ok', {'code': code})
+    emit('student_roster', {
+        'students': [
+            {
+                'sid': sid,
+                'name': info['name'],
+                'status': info.get('status', 'connected'),
+            }
+            for sid, info in active_meetings[code]['students'].items()
+            if sid != request.sid
+        ]
+    })
 
     # If teacher is already in the room, notify student so they wait for offer
     host_sid = active_meetings[code].get('host_sid')
@@ -465,6 +477,8 @@ def on_disconnect():
             student_detectors.pop(request.sid, None)
             socketio.emit('student_left', {'sid': request.sid, 'name': name},
                           room=f'teacher_{code}')
+            socketio.emit('student_left', {'sid': request.sid, 'name': name},
+                          room=f'meeting_{code}')
             break
         # If teacher disconnects
         if meeting.get('host_sid') == request.sid:

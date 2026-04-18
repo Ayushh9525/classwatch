@@ -62,6 +62,14 @@
       <a href="{{ url_for('student_home') }}" class="btn btn-danger btn-sm" id="btn-leave"
          onclick="return confirm('Leave meeting?')">Leave</a>
     </div>
+
+    <div class="section-label">Classmates</div>
+    <div id="student-peer-grid" class="student-grid peer-grid">
+      <div class="empty-state" id="peer-waiting-msg" style="grid-column:1/-1;">
+        <div style="font-size:28px;margin-bottom:6px;">🎥</div>
+        Waiting for classmates to join…
+      </div>
+    </div>
   </div>
 
   <!-- Right: alerts -->

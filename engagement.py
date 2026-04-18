@@ -324,7 +324,7 @@ class EngagementDetector:
                 self.writing_event.update(False)
                 result["sleeping"] = True
                 result["status"] = "sleeping"
-                result["alert"] = "😴 Student appears sleepy or drowsy"
+                result["alert"] = "Student appears sleepy or drowsy"
                 result["alert_type"] = "sleeping"
                 return result
 
@@ -339,7 +339,7 @@ class EngagementDetector:
                 self.writing_event.update(False)
                 result["phone_usage"] = True
                 result["status"] = "phone_usage"
-                result["alert"] = "📱 Phone visible in the camera frame"
+                result["alert"] = "Phone visible in the camera frame"
                 result["alert_type"] = "phone_usage"
                 return result
 
@@ -360,7 +360,7 @@ class EngagementDetector:
             if self.away_event.update(looking_away_now):
                 result["looking_away"] = True
                 result["status"] = "away"
-                result["alert"] = "👀 Student is looking away from the screen"
+                result["alert"] = "Student is looking away from the screen"
                 result["alert_type"] = "away"
                 return result
 

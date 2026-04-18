@@ -617,6 +617,11 @@ select {
   flex-shrink: 0;
 }
 
+.teacher-layout .teacher-cam-wrap {
+  width: 260px;
+  height: 150px;
+}
+
 .pip-wrap {
   width: 220px;
   height: 150px;
@@ -625,6 +630,10 @@ select {
 
 .sc-video-wrap {
   height: 180px;
+}
+
+.peer-grid .peer-video-wrap {
+  height: 170px;
 }
 
 video {
@@ -736,6 +745,10 @@ video {
 .teacher-layout .student-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 260px));
   justify-content: flex-start;
+}
+
+.peer-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
 .teacher-layout .student-grid:has(.student-card:nth-child(3)) {
